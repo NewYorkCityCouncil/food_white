@@ -85,10 +85,10 @@ leaflet(data = full_dt_sf) %>%
   addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(full_dt$prop_sr_snap), 
-              color = "black", 
+              color = "white", 
               stroke = TRUE, 
               fillOpacity = .5, 
-              popup = ~paste(`prop_sr_snap`, `estimate.x`)) %>% 
+              popup = ~paste(`prop_sr_snap`, `estimate`)) %>% 
   addLegend(position ="bottomright", 
             pal = pal, 
             values = full_dt_sf$prop_sr_snap
