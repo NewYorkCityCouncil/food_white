@@ -12,7 +12,7 @@ gt_gards <- fread("https://data.cityofnewyork.us/resource/yes4-7zbb.csv")
 # let's map 
 
 gt <- leaflet(gt_gards) %>% 
-  addProviderTiles("CartoDB.Positron") %>%  
+  addCouncilStyle() %>%
   addCircles(lng = ~longitude, 
              lat = ~latitude, 
              popup = ~garden_name)
