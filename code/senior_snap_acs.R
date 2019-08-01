@@ -7,6 +7,7 @@ library(tigris)
 library(ggplot2)
 
 # we are exploring the acs data: seniors and snap benefits in nyc 6/10/19
+# if someone doesn't have a kitchen in their house and they are eligible for snap - 
 
 # register api key 
 # census_api_key("8cdccf85df4c4c7cf6fadaca4006860333f8e592", install = TRUE, overwrite = TRUE)
@@ -70,7 +71,6 @@ full_dt[, prop_sr_snap := estimate/total] # what do we do about margins of error
 full_dt[,"geometry.y"] <- NULL
 full_dt[prop_sr_snap %in% NaN, prop_sr_snap := 0]
 
-
 pal = colorNumeric(
   palette = "RdYlBu",
   domain = full_dt$prop_sr_snap, 
@@ -93,7 +93,6 @@ leaflet(data = full_dt_sf) %>%
             pal = pal, 
             values = full_dt_sf$prop_sr_snap
   )
-
 
 # let's plot the number of seniors in a community district 
 ggplot(full_dt, aes(x=total, y=prop_sr_snap)) + geom_point()

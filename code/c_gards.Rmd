@@ -1,0 +1,140 @@
+---
+title: "Community Gardens in NYC"
+output: word_document
+---
+
+Community Gardens in NYC
+Data Source: NYCDPR	GIS	Unit.	“City	of	NYC,	GreenThumb	Community	Gardens.”	
+https://data.cityofnewyork.us/Environment/NYC-Greenthumb-CommunityGardens/ajxm-kzmj/data.	
+
+```{r echo=FALSE}
+library(knitr)
+library(data.table)
+library(leaflet)
+library(dplyr)
+library(councildown)
+library(purrr)
+source("utils.r")
+library(sf)
+library(httr)
+library(rmarkdown)
+library(htmltools)
+library(htmlwidgets)
+library(zoo)
+library(Rcpp)
+source("geo_utils.r")
+
+gt_gards <- fread("https://data.cityofnewyork.us/resource/yes4-7zbb.csv")
+gt_gards[grep("TPL", jurisdiction, ignore.case = TRUE), jurisdiction := "TPL"]
+gt_gards[, N := .N, by = "jurisdiction"]
+cityland <- c("DPR", "DOT", "DOE", "MTA", "DPR/DOT", "DPR/MTA/DOT", "DEP", "DPR/HPD", "HPD", "DPR/PRI", "HRA", "NYRP/DPR", "DCA", "DPR/DEP")
+
+gt_gards[jurisdiction %in% cityland, Owner := "City Land"]
+gt_gards[jurisdiction %in% "TPL", Owner := "Trust for Public Land"]
+gt_gards[jurisdiction %in% "NYRP", Owner := "NY Restoration Project"]
+gt_gards[jurisdiction %in% "PRI", Owner := "Private"]
+
+# gt_sub <- gt_gards
+# 
+# city_land <- gt_gards
+# city_land[jurisdiction %in% "DPR", jurisdiction := "Dept of Parks and Rec"]
+# city_land[jurisdiction %in% "DOE", jurisdiction := "Dept of Education"]
+# city_land[jurisdiction %in% "HPD", jurisdiction := "Housing and Preservation Dept"]
+# city_land[jurisdiction %in% "DOT", jurisdiction := "Dept of Transportation"]
+# city_land[jurisdiction %in% "DPR/HPD", jurisdiction := "Dept of Parks and Rec/Housing and Prservation Dept"]
+# city_land[jurisdiction %in% "DPR/DOT", jurisdiction := "Dept of Parks and Rec/Dept of Transportation"]
+# city_land[jurisdiction %in% "DPR/MTA/DOT", jurisdiction := "Dept of Parks and Rec/Dept of Transportation"]
+# city_land[jurisdiction %in% "DEP", jurisdiction := "Dept Environmental Protection"]
+# city_land[jurisdiction %in% "TPL", jurisdiction := "Trust for Public Land"]
+# city_land[jurisdiction %in% "NYRP", jurisdiction := "NY Restoration Project"]
+# city_land[jurisdiction %in% "PRI", jurisdiction := "Private"]
+# city_land[jurisdiction %in% "DPR/PRI", jurisdiction := "Dept of Parks and Rec/Private"]
+# city_land[jurisdiction %in% "HRA", jurisdiction := "Human Resources Admin"]
+# city_land[jurisdiction %in% "DCA", jurisdiction := "Dept of Consumer Affairs"]
+# city_land[jurisdiction %in% "NYRP/DPR", jurisdiction := "NY Restoration Project/Dept Parks and Rec"]
+# city_land[jurisdiction %in% "DPR/DEP", jurisdiction := "Dept Parks and Rec/Dept Environmental Protection"]
+# 
+# dt <- city_land[, .N, by = jurisdiction][order(N, decreasing = TRUE)]
+# tot <- data.table("Total", 536)
+# names(tot) <- c("jurisdiction", "N")
+# dt <- rbind(dt, tot)
+# kable(dt)
+
+```
+
+
+
+```{r echo=FALSE}
+gt_gards <- distinct(gt_gards) %>%
+  mutate(popup = map2_chr(garden_name, address, ~caption_template(header_template(.x, .y), NULL)))
+
+gt_jurs <- split(gt_gards, gt_gards$Owner)
+
+names(gt_jurs) <- c("<div style='position: relative; right:2px; top: 4px; display: inline-block; width: 1em;height: 1em; margin: 2px;background-color:#440154;'></div> City Land", 
+"<div style='position: relative; right:2px; top: 4px; display: inline-block; width: 1em;height: 1em; margin: 2px;background-color:#31688E;'></div> NY Restoration Project",
+"<div style='position: relative; right:2px; top: 4px; display: inline-block; width: 1em;height: 1em; margin: 2px;background-color:#35B779;'></div> Private",
+"<div style='position: relative; right:2px; top: 4px; display: inline-block; width: 1em;height: 1em; margin: 2px;background-color:#FDE725;'></div> Trust for Public Land")
+
+pal = colorFactor(
+  palette = "viridis",
+  domain = gt_gards$Owner, 
+  na.color = "Black", 
+  reverse = FALSE
+)
+l <- leaflet() %>%
+  # addProviderTiles("CartoDB.Positron") %>%
+  addCouncilStyle()
+              
+
+names(gt_jurs) %>%
+  purrr::walk(function(df) {
+    l <<- l %>%
+      addCircles(data=gt_jurs[[df]],
+                 lng=~longitude, lat=~latitude,
+                 color = ~pal(Owner), 
+                 popup = ~popup,
+                 group = df, 
+                 weight = 5,
+                 opacity = .7, 
+                 radius = 3, 
+                 labelOptions = labelOptions(noHide = F,
+                                             direction = 'auto')) 
+  })
+
+
+# l <-  l %>% addLegend("topleft", pal = pal, 
+#                       values = unique(gt_gards$Owner), 
+#     title = "Landowner", opacity = 1)
+
+l <- l %>%
+  addLayersControl(
+    overlayGroups = names(gt_jurs),
+    position = "topright", 
+    options = layersControlOptions(collapsed = FALSE, sortLayers = "false")
+  )
+
+l <- l %>% setView(-73.88099670410158,40.72540497175607,  zoom = 10.5) %>%
+  registerPlugin(geocoder) %>% 
+  onRender(geocode_js, data = list(key = "AIzaSyDcTIR17kZAosnc12oiUKmgykM1HwjPo3Y")) 
+l
+saveWidget(l, "community_gards2.html", selfcontained = FALSE)
+```
+
+
+```{r}
+gt <- leaflet(gt_gards, options = leafletOptions(zoomControl = FALSE)) %>% 
+  addCouncilStyle() %>%
+  addCircles(lng = ~longitude, 
+             lat = ~latitude, 
+             popup = ~popup, 
+             color = ~pal(Owner)) %>% 
+addLegend(position ="topleft", 
+            pal = pal, 
+            values = gt_gards$Owner, 
+            title = "Jurisdiction of Garden"
+  )
+gt
+
+saveWidget(gt, "community_gards.html")
+```
+

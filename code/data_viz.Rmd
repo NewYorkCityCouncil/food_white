@@ -34,7 +34,6 @@ uhf_shp <- read_sf("uhf_shps_2/")
 # uhf_shp <- st_transform(uhf_shp, ' +proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs')
 ```
 
-
 #### Map 1: Proportion of adults that did not have any fruits or vegetables the prior day by UHF
 New York City Department of Health and Mental Hygiene. Epiquery: NYC Interactive Health
 Data System. Fruit/vegetable consumption by Neighborhood, 2017 (Age adjusted). 7/15/2019. https://nyc.gov/health/epiquery 
@@ -69,7 +68,7 @@ pal = colorNumeric(
   reverse = FALSE
 )
 
-nutrition_map <- leaflet(data = veg_sf, options = leafletOptions(zoomControl = FALSE)) %>% 
+nutrition_map <- leaflet(data = veg_sf, options = leafletOptions(zoomControl = FALSE), height = 500, width = 450) %>% 
  #  addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(pct), 
@@ -79,16 +78,16 @@ nutrition_map <- leaflet(data = veg_sf, options = leafletOptions(zoomControl = F
   addLegend(position ="topleft", 
             pal = pal, 
             values = veg_sf$pct, 
-            title = "Porportion of<br>respondents<br>that had no<br>fruits/vegetables<br>the
+            title = "Proportion of<br>respondents<br>that had no<br>fruits/vegetables<br>the
             prior day", 
             labFormat = labelFormat(suffix = "%")
   )
 
 # saveWidget(nutrition_map, "nutrition_map.html")
-nutrition_map
+nutrition_map 
 ```
 
-#### Map 2: Percentage of respondents that sometimes/often did not have enough food by UHF 
+#### Map 2: Proportion of respondents that sometimes/often did not have enough food by UHF 
 New York City Department of Health and Mental Hygiene. Epiquery: NYC Interactive Health Data System. Food insecurity, 2017 (Age adjusted). 7/15/2019. https://nyc.gov/health/epiquery 
 ```{r echo=FALSE, warning=FALSE}
 fi <- fread("data/food_insecurity.csv")
@@ -130,7 +129,7 @@ pal = colorNumeric(
 # fix NA weirdness
 css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
 
-food_insc <- leaflet(data = fi_sf, options = leafletOptions(zoomControl = FALSE)) %>% 
+food_insc <- leaflet(data = fi_sf, options = leafletOptions(zoomControl = FALSE), height = 600, width = 500) %>% 
  #  addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(pct), 
@@ -145,7 +144,6 @@ food_insc <- leaflet(data = fi_sf, options = leafletOptions(zoomControl = FALSE)
             labFormat = labelFormat(suffix = "%")) %>% 
   prependContent(tags$style(type = "text/css", css_fix))
 
-# saveWidget(food_insc, "food_insc_map.html")
 
 food_insc
 ```
@@ -174,7 +172,7 @@ pal = colorNumeric(
   reverse = FALSE
 )
 
- povmap <-  leaflet(data = pov_sf, options = leafletOptions(zoomControl = FALSE)) %>% 
+ povmap <-  leaflet(data = pov_sf, options = leafletOptions(zoomControl = FALSE), height = 600, width = 500) %>% 
   # addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(Percent), 
@@ -184,10 +182,10 @@ pal = colorNumeric(
   addLegend(position ="topleft", 
             pal = pal, 
             values = pov_sf$Percent, 
-            title = "Proportion of<br>adults below<br>poverty line", 
+            title = "Proportion of<br> of adults below<br>poverty line", 
             labFormat = labelFormat(suffix = "%")
   )
- # saveWidget(povmap, "poverty_map.html")
+
  povmap
 ```
 
@@ -211,7 +209,7 @@ pal = colorNumeric(
   reverse = FALSE
 )
 
- racemap <- leaflet(data = race_sf, options = leafletOptions(zoomControl = FALSE)) %>% 
+ racemap <- leaflet(data = race_sf, options = leafletOptions(zoomControl = FALSE), height = 500, width = 450) %>% 
   # addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(pct_nw), 
@@ -225,8 +223,7 @@ pal = colorNumeric(
             labFormat = labelFormat(suffix = "%")
   )
 
-# saveWidget(racemap, "race_map.html")
- racemap
+racemap
 ```
 
 
@@ -283,7 +280,6 @@ diab_map <- leaflet(data = diab_sf, options = leafletOptions(zoomControl = FALSE
             that have diabetes <br>", 
             labFormat = labelFormat(suffix = "%")) 
 
-#   saveWidget(diab_map, "diabetes_map.html")
 diab_map
 ```
 
@@ -305,6 +301,9 @@ snap_nyc_sf <- snap_ct_sub %>% left_join(ct_shps, by = "GEOID") %>%
   st_as_sf() %>% 
   st_transform('+proj=longlat +datum=WGS84')
 
+# fix NA weirdness
+css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
+
 
 # let's map this data 
 pal = colorNumeric(
@@ -314,7 +313,7 @@ pal = colorNumeric(
   reverse = FALSE
 )
 
-snap_ct <- leaflet(data = snap_nyc_sf, options = leafletOptions(zoomControl = FALSE)) %>% 
+snap_ct <- leaflet(data = snap_nyc_sf, options = leafletOptions(zoomControl = FALSE), height = 600, width = 500) %>% 
   # addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(pcnt_snap), 
@@ -324,12 +323,9 @@ snap_ct <- leaflet(data = snap_nyc_sf, options = leafletOptions(zoomControl = FA
   addLegend(position ="topleft", 
             pal = pal, 
             values = snap_nyc_sf$pcnt_snap, 
-            title = "Proportion of households<br>receiving<br>SNAP", 
-            labFormat = labelFormat(suffix = "%")
-  )
-
+            labFormat = labelFormat(suffix = "%"))%>% 
+  prependContent(tags$style(type = "text/css", css_fix))
 snap_ct
-# saveWidget(snap_ct, "snap_censustract.html")
 ```
 
 
@@ -351,7 +347,7 @@ pal = colorNumeric(
   reverse = FALSE
 )
 
-green_sp <- leaflet(data = vc_sf, options = leafletOptions(zoomControl = FALSE)) %>% 
+green_sp <- leaflet(data = vc_sf, options = leafletOptions(zoomControl = FALSE), height = 600, width = 500) %>% 
   # addProviderTiles("CartoDB.Positron") %>% 
   addPolygons(weight = .5, 
               fillColor = ~pal(Percent), 
@@ -365,7 +361,7 @@ green_sp <- leaflet(data = vc_sf, options = leafletOptions(zoomControl = FALSE))
             labFormat = labelFormat(suffix = "%")
   )
 
-green_sp 
+green_sp
 ```
 
 ### Snap participation over time 
@@ -375,8 +371,8 @@ snap_time <- fread("https://data.cityofnewyork.us/resource/5c4s-jwtq.csv")
 snap_time[, yr_mo := as.Date(month)]
 # snap_time[, yr_mo := as.yearmon(yr_mo)]
 
-ggplot(snap_time, aes(x = yr_mo, y = total_snap_recipients)) + geom_smooth(se=FALSE, color = "seagreen") + ylab("Total Snap Recipients") + xlab("Year") + ggtitle("Snap Participation Over Time") + theme_bw()
-# ggsave("snap_participation.jpg")
+ggplot(snap_time, aes(x = yr_mo, y = total_snap_recipients)) + geom_smooth(se=FALSE, color = "seagreen") + ylab("Total SNAP Recipients") + xlab("Year") + scale_y_continuous(labels = scales::number_format(big.mark = ",")) + ggtitle("SNAP Participation Over Time") + theme_bw()
+ggsave("snap_participation.jpg", dpi = 1200)
 ```
 
 ```{r echo=FALSE}
@@ -389,7 +385,7 @@ ggplot(snap_time, aes(x = yr_mo, y = total_snap_recipients)) + geom_smooth(se=FA
 # race_ct_sub[, pcnt_race := as.numeric(`Percent households receiving food stamps/SNAP; Estimate; Households`)]
 ```
 
-### Aging population: Past, Present, Future
+### Population Growth Historical and Future Trends for Seniors 
 Data source: https://www1.nyc.gov/assets/planning/download/pdf/data-maps/nyc-population/projections_report_2010_2040.pdf
 ```{r echo=FALSE}
 Year <- c(1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020, 2030, 2040) 
@@ -408,10 +404,9 @@ aging_long <- melt(aging, id.vars = "Year", measure.vars = c("NYC", "Brooklyn", 
 names(aging_long) <- c("Year", "County", "Population")
 
 # make ggplot 
-ggplot(aging_long[Year<=2010, ], aes(x=Year, y=Population, group=County, color=County)) + geom_line(size = 2) + geom_line(data = aging_long[Year>=2010, ], linetype="dashed") + scale_y_continuous(labels = scales::number_format(big.mark = ","), breaks = seq(from = 0, to=2000000, by = 100000)) + theme_minimal() +
+p <- ggplot(aging_long[Year<=2010, ], aes(x=Year, y=Population, group=County, color=County)) + geom_line(size = 2) + geom_line(data = aging_long[Year>=2010, ], linetype="dashed") + scale_y_continuous(labels = scales::number_format(big.mark = ","), breaks = seq(from = 0, to=2000000, by = 100000)) + theme_minimal() +
   labs(title = "Population Growth for Seniors",
-       subtitle = "Historical and Expected Trends in Population Growth for Seniors",
-       caption = "New York City Population Projections by Age/Sex & Borough, 2010-2040") +
+       subtitle = "Historical and Expected Trends in Population Growth for Seniors") +
   theme(panel.grid = element_blank(),
         axis.title.y = element_blank(),
         axis.title.x = element_blank(),
@@ -420,7 +415,7 @@ ggplot(aging_long[Year<=2010, ], aes(x=Year, y=Population, group=County, color=C
         legend.title = element_blank(),
         axis.text.x=element_text(hjust = 1, size = 13), 
         legend.text = element_text(size = 13))
-ggsave("ProjectedPopGrowth.jpeg")
+ggsave("pop_growth_seniors.jpg", dpi = 1200, width = 5.5)
 ```
 
 ### Aging and poverty 
@@ -475,8 +470,6 @@ ap_nyc[county %in% "Richmond County", county := "Staten Island"]
 ap_nyc[county %in% "New York County", county := "Manhattan"]
 ap_nyc[county %in% "Kings County", county := "Brooklyn"]
 
-
-
  # let's plot poverty 
 ap_nyc[, county := gsub("County", "", county)]
 
@@ -496,8 +489,7 @@ long_ap_nyc[, value := value/100]
 # this is 
 ggplot(long_ap_nyc, aes(x=year, y = value, group = county, color = county)) + geom_line(size = 3) + theme_minimal() + scale_y_continuous(labels = scales::percent) + 
   labs(title = "Seniors and Poverty",
-       subtitle = "Percentage of Seniors Experiencing Poverty",
-       caption = "American Community Survey, 2013-2017, Table S1701") +
+       subtitle = "Percentage of Seniors Experiencing Poverty") +
   theme(panel.grid = element_blank(),
         axis.title.y = element_blank(),
         axis.title.x = element_blank(),
@@ -508,14 +500,12 @@ ggplot(long_ap_nyc, aes(x=year, y = value, group = county, color = county)) + ge
         legend.text = element_text(size = 13))
  
 
-ggsave("age_pov.jpeg")
+ggsave("seniors_pov.jpeg", dpi = 1200, width = 5.5)
 ```
 
 ### School Lunch 
-```{r echo=FALSE, include=FALSE, warning=FALSE,message=FALSE}
-
+```{r echo=FALSE, include=FALSE, warning=FALSE,message=FALSE, include=FALSE}
 library(tidyverse)
- 
 lunch <- tribble (
   ~year, ~perc_part, ~slice,
   2017, .589, "Citywide",
@@ -554,29 +544,29 @@ p <- ggplot(lunch, aes(year, perc_part)) +
         legend.title = element_blank(),
         legend.text = element_text(size = 13))
  p
-# ggsave("school_lunch.jpg", p, width = 5, height = 10, units = "in")
- 
+ggsave("school_lunch.jpg", p, width = 5, height = 10, units = "in")
 
 ```
-
 ### Pell Grants 
+Citation: A Profile of Undergraduates at CUNY Senior and Community Colleges: Fall 2017 https://www2.cuny.edu/wp-content/uploads/sites/4/page-assets/about/administration/offices/oira/institutional/data/current-student-data-book-by-subject/ug_student_profile_f17.pdf
 ```{r echo=FALSE, warning=FALSE}
 df <- data.frame(Percent = c(57.7, 100-57.7, 68, 100-68), Need = c("Pell", "Non-Pell", "Pell", "Non-Pell"), type = c(
   "Senior Colleges", "Senior Colleges", "Junior Colleges", "Junior Colleges"))
 
 bp<- ggplot(df, aes(x=type, y=Percent)) +
 geom_col(stat = "identity", aes(fill=Need)) 
-bp + xlab("") + ggtitle("Percent of Students That Receive Pell Assistance") 
+bp + xlab("") + ggtitle("Percent of CUNY Students That Received Pell Assistance in 2017") 
 ggsave("pellgrants.jpg")
 ```
 
-
+### School Lunch 
+Community Food Advocates, Universal School Lunch in NYC Year One, Insights from High School Cafeterias, (March 2019), http://nyf.issuelab.org/resources/34401/34401.pdf. 
 ```{r echo=FALSE, warning=FALSE}
 df <- data.frame(`Percent Change` = c(.038, .053, .161), Class = c("Citywide (excluding H.S)","Citywide", "High Schools"))
 bp<- ggplot(df, aes(x=Class, y=Percent.Change, fill = Class)) +
 geom_col(stat = "identity") + scale_y_continuous(labels = scales::percent)
-bp + labs(title = "School lunch participation pre and post USL",
-       subtitle = "% Change in Participation 2016-2017, before & after USL",
+bp + labs(title = "School Lunch Participation Pre and Post Universal School Lunch",
+       subtitle = "% Change in Participation 2016-2017",
        caption = "Source: Universal School Lunch in NYC Year One, Community Food Advocates") +
   theme(panel.grid = element_blank(),
         axis.title.y = element_blank(),
@@ -587,8 +577,62 @@ bp + labs(title = "School lunch participation pre and post USL",
         legend.title = element_blank(),
         legend.text = element_text(size = 13))
  
-ggsave("schoolfood.jpg", bg = "transparent")
+ggsave("schoolfood.png", dpi = 1200, width = 6, height = 6)
+```
+
+### Food Waste
+Wasted: How America is Losing Up To 40 Percent of its food Farm to Fork to Landfill, Second Edition of NRDC’s Original 2012 Report, National Resource Defense Council, (2017), https://www.nrdc.org/sites/default/files/wasted-2017-report.pdf. 
+```{r echo=FALSE}
+df <- data.frame(Percent = c(.54, .20, .05, .07, .04, .1), Class = c("Residential", "Restaurants or Caterers", "Grocers or Food Wholesale", "Food Manufacturing and Processing", "Health Care", "Other"))
+bp<- ggplot(df, aes(x=reorder(Class, Percent), y=Percent, fill = Class)) +
+geom_col(stat = "identity", show.legend = FALSE) + scale_y_continuous(labels = scales::percent)
+bp + labs(title = "Origin of Food Waste in New York City",
+       caption = "Source: NRDC Estimating Quantities and Types of Food Waste at the City Level") +
+  theme(panel.grid = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12)) + coord_flip()
+       # legend.direction = "horizontal",
+       # legend.position = "top",
+       # legend.title = element_blank(),
+       # legend.text = element_text(size = 11))
+       
+ggsave("foodwaste.jpg",  dpi = 1200, width = 7.5, height = 6)
+
 ```
 
 
+#### Heat Vulnerability Index 
+New York City Department of Health and Mental Hygiene. Environment and Health Data Portal- Heat Vulnerability Index, 2010. 7/25/2019. http://nyc.gov/health/tracking
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+cdsf <- read_sf("cd_sf")
+vc <- fread("hvi.csv")
+vc[, boro_cd := geo_entity_id]
+
+vc_geom <- vc %>% left_join(cdsf, by = "boro_cd")
+vc_sf <- vc_geom %>% st_as_sf() 
+vc_sf <- st_transform(vc_sf, '+proj=longlat +datum=WGS84')
+
+pal = colorNumeric(
+  palette = "Reds",
+  domain = as.integer(vc_sf$data_value), 
+  na.color = "Grey", 
+  reverse = FALSE
+)
+
+hvi <- leaflet(data = vc_sf, options = leafletOptions(zoomControl = FALSE), 
+                height = 500, width =  500) %>% 
+  # addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(weight = .5, 
+              fillColor = ~pal(data_value), 
+              color = "white", 
+              stroke = TRUE, 
+              fillOpacity = .9) %>% 
+  addLegend(position ="topleft", 
+            pal = pal, 
+            values = vc_sf$data_value, 
+            title = "Heat Vulnerability Index")
+hvi
+```
 
